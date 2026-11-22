@@ -1,0 +1,208 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#ffffff">
+<title>PWA Live chat</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:#f7f7f7;color:#222;padding-bottom:76px}
+header{background:white;padding:17px 14px;position:sticky;top:0;z-index:5}
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.tabs{display:flex;gap:18px;overflow:auto;white-space:nowrap}
+.tabs button{border:0;background:none;font-size:17px;font-weight:bold;color:#777}
+.tabs button.active{color:#20b99a}
+.top-icons{display:flex;gap:18px;font-size:24px}
+main{padding:14px}
+.categories{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:18px 0}
+.category{text-align:center}
+.category .emoji{height:68px;border-radius:16px;background:#e8e5ff;display:grid;place-items:center;font-size:34px}
+.category b{font-size:12px;display:block;margin-top:7px}
+.filters{display:flex;gap:10px;margin:20px 0}
+.filter{border:0;border-radius:22px;padding:10px 17px;background:#eee;font-weight:bold}
+.filter.active{background:#8cebc9;color:#126b53}
+.room{display:flex;gap:12px;background:white;padding:13px 0;margin-bottom:12px;border-bottom:5px solid #f5f5f5;align-items:center}
+.avatar{width:90px;height:105px;border-radius:15px;background:linear-gradient(135deg,#d6c5ff,#a6e6db);display:grid;place-items:center;font-size:40px;flex-shrink:0}
+.room-info{flex:1;min-width:0}
+.room-title{font-weight:bold;font-size:15px;margin-bottom:8px}
+.desc{font-size:12px;color:#999;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:10px}
+.tags{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.tag{background:#e1f7ed;color:#168e6d;border-radius:15px;padding:5px 8px;font-size:10px}
+.online{font-size:12px;color:#21b99a;font-weight:bold;white-space:nowrap}
+.banner{background:linear-gradient(110deg,#16b979,#087d58);color:white;border-radius:15px;padding:24px 12px;text-align:center;margin:16px 0}
+.banner strong{font-size:22px}
+.banner p{font-size:13px;margin-top:8px}
+nav{position:fixed;bottom:0;left:0;width:100%;background:white;border-top:1px solid #eee;display:flex;justify-content:space-around;padding:9px 2px calc(9px + env(safe-area-inset-bottom));z-index:10}
+nav button{border:0;background:none;color:#888;font-size:11px;font-weight:bold;min-width:0;flex:1}
+nav button span{display:block;font-size:24px;margin-bottom:5px}
+nav button.active{color:#21b99a}
+.page-title{font-size:22px;margin:10px 0 18px}
+.panel{background:white;padding:17px;border-radius:14px;margin:12px 0}
+.action{background:#20b99a;color:white;border:0;border-radius:9px;padding:12px 16px;margin-top:12px;font-weight:bold}
+.gift-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.gift{text-align:center;background:white;padding:16px 5px;border-radius:12px}
+.gift div{font-size:30px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="top">
+    <div class="tabs">
+      <button onclick="topTab(this,'Related')">Related</button>
+      <button class="active" onclick="topTab(this,'Party')">Party</button>
+      <button onclick="topTab(this,'Activity')">Activity</button>
+    </div>
+    <div class="top-icons">
+      <span onclick="go('Room')">🏠</span>
+      <span onclick="searchRooms()">⌕</span>
+    </div>
+  </div>
+</header>
+
+<main id="app"></main>
+
+<nav>
+  <button class="active" onclick="go('Room',this)"><span>🏠</span>Room</button>
+  <button onclick="go('Gaming',this)"><span>🎮</span>Gaming</button>
+  <button onclick="go('Discover',this)"><span>🌐</span>Discover</button>
+  <button onclick="go('Message',this)"><span>💬</span>Message</button>
+  <button onclick="go('Me',this)"><span>👤</span>Me</button>
+</nav>
+
+<script>
+const app=document.getElementById("app");
+let currentRoom="";
+
+const rooms=[
+ ["🎤","Telugu Friendship Room","Welcome everyone! Let's chat together","Friendship","13"],
+ ["😎","G.F B.F SETTING ROOM","Welcome to everyone","Chat","78"],
+ ["🎶","Music & Singing","Enjoy songs and make friends","Music","9"],
+ ["😂","Fun & Comedy Room","Let's enjoy together","Fun","24"],
+ ["🌍","World Friends","Meet new people around the world","Friends","41"]
+];
+
+function topTab(btn,name){
+ document.querySelectorAll(".tabs button").forEach(x=>x.classList.remove("active"));
+ btn.classList.add("active");
+}
+
+function roomCard(r){
+ return `<div class="room">
+ <div class="avatar">${r[0]}</div>
+ <div class="room-info">
+ <div class="room-title">${r[1]}</div>
+ <div class="desc">${r[2]}</div>
+ <div class="tags">
+ <span class="tag">🇮🇳 India</span>
+ <span class="tag">💬 ${r[3]}</span>
+ </div>
+ </div>
+ <div class="online">▥ ${r[4]}</div>
+ </div>`;
+}
+
+function home(){
+ app.innerHTML=`
+ <div class="categories">
+ ${[["🏆","Ranking"],["💕","Couple"],["🛡️","Family"],["🥊","Room PK"]].map(x=>`
+ <div class="category"><div class="emoji">${x[0]}</div><b>${x[1]}</b></div>`).join("")}
+ </div>
+ <div class="filters">
+ <button class="filter active">🔥 Hot</button>
+ <button class="filter">Country/Region</button>
+ </div>
+ <div id="roomList">${rooms.map(roomCard).join("")}</div>
+ <div class="banner"><strong>🎁 Gift Treasure Event</strong>
+ <p>Join the fun and enjoy virtual gifts!</p></div>
+ `;
+ document.querySelectorAll(".room").forEach((el,i)=>{
+   el.onclick=()=>enterRoom(rooms[i][1]);
+ });
+}
+
+function enterRoom(name){
+ currentRoom=name;
+ app.innerHTML=`
+ <h2 class="page-title">🎙️ ${name}</h2>
+ <div class="panel">
+ <h3>Welcome to the Room!</h3>
+ <p style="color:#999;margin-top:8px">Voice room preview</p>
+ </div>
+ <div class="categories">
+ <div class="category" onclick="roomInbox()"><div class="emoji">📥</div><b>Inbox</b></div>
+ <div class="category" onclick="roomGifts()"><div class="emoji">🎁</div><b>Gifts</b></div>
+ <div class="category"><div class="emoji">👥</div><b>Members</b></div>
+ <div class="category"><div class="emoji">🎤</div><b>Mic</b></div>
+ </div>
+ <div class="panel">🎙️ Live voice connection will be added next.</div>
+ <button class="action" onclick="go('Room')">Leave Room</button>
+ `;
+}
+
+function roomInbox(){
+ app.innerHTML=`<h2 class="page-title">📥 Room Inbox</h2>
+ <div class="panel">Room notifications will appear here.</div>
+ <button class="action" onclick="enterRoom(currentRoom)">Back to Room</button>`;
+}
+
+function roomGifts(){
+ app.innerHTML=`<h2 class="page-title">🎁 Room Gifts</h2>
+ <div class="gift-grid">
+ ${[["🌹","Rose"],["❤️","Heart"],["👑","Crown"],["🚀","Rocket"],["💎","Diamond"],["🦋","Butterfly"]].map(x=>`
+ <div class="gift"><div>${x[0]}</div><b>${x[1]}</b></div>`).join("")}
+ </div>
+ <button class="action" onclick="enterRoom(currentRoom)">Back to Room</button>`;
+}
+
+function go(page,btn){
+ document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));
+ if(btn)btn.classList.add("active");
+
+ if(page==="Room")home();
+
+ if(page==="Gaming")
+ app.innerHTML=`<h2 class="page-title">🎮 Gaming</h2>
+ <div class="panel">🎯 Games will be added here.</div>`;
+
+ if(page==="Discover")
+ app.innerHTML=`<h2 class="page-title">🌐 Discover</h2>
+ <div class="panel">Discover new friends and popular rooms.</div>`;
+
+ if(page==="Message")
+ app.innerHTML=`<h2 class="page-title">💬 Messages</h2>
+ <div class="panel">Your private messages and notifications will appear here.</div>`;
+
+ if(page==="Me")
+ app.innerHTML=`<h2 class="page-title">👤 My Profile</h2>
+ <div class="panel"><div style="font-size:42px">🙂</div>
+ <h3>Guest User</h3><p style="color:#999;margin-top:8px">PWA Live chat member</p></div>
+ <div class="panel" onclick="vipPage()">
+ <h3>👑 VIP Membership</h3>
+ <p style="color:#999;margin-top:8px">Explore paid VIP plans</p>
+ </div>
+ <div class="panel">⚙️ Settings<br><br>🛡️ Privacy & Safety</div>`;
+}
+
+function vipPage(){
+ app.innerHTML=`<h2 class="page-title">👑 VIP Membership</h2>
+ <div class="panel">VIP 1 — ₹49 / 30 Days</div>
+ <div class="panel">VIP 2 — ₹99 / 30 Days</div>
+ <div class="panel">VIP 3 — ₹199 / 30 Days</div>
+ <div class="panel">VIP 4 — ₹399 / 30 Days</div>
+ <p style="color:#999">Secure payment integration will be added later.</p>`;
+}
+
+function searchRooms(){
+ const q=prompt("Search rooms");
+ if(!q)return;
+ const found=rooms.filter(r=>r[1].toLowerCase().includes(q.toLowerCase()));
+ app.innerHTML=found.length?found.map(roomCard).join(""):"<p>No rooms found</p>";
+}
+
+home();
+</script>
+</body>
+</html>
