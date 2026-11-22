@@ -1,277 +1,357 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PWA Live Chat</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#10101c;color:white;font-family:Arial,sans-serif}
-button,input,textarea,select{font:inherit}
-button{padding:13px;border:0;border-radius:10px;background:#7655ef;color:white;font-weight:bold;cursor:pointer}
-input,textarea,select{width:100%;padding:13px;margin:8px 0 15px;background:#25253a;color:white;border:1px solid #484860;border-radius:9px}
-label{font-size:14px;color:#ccc}
-#authScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
-.auth-card{width:100%;max-width:390px;background:#1b1b2b;padding:25px;border-radius:18px}
-.logo{text-align:center;font-size:26px;font-weight:bold;margin-bottom:28px}
-.auth-card h2{text-align:center}
-.sub{text-align:center;color:#aaa;font-size:14px;margin-bottom:25px}
-.auth-buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.secondary{background:#393950}
-#message,#appMessage{font-size:13px;color:#ffbd70;text-align:center}
-#appScreen{display:none}
-header{background:#1b1b2b;padding:17px;display:flex;justify-content:space-between;align-items:center}
-.container{max-width:700px;margin:auto;padding:18px}
-.panel{background:#1b1b2b;padding:17px;border-radius:14px;margin:15px 0}
-.room{background:#292940;padding:14px;border-radius:12px;margin:12px 0}
-.room small{color:#aaa}
-.danger{background:#b7354b}
+body{margin:0;background:#101323;color:white;font-family:Arial,sans-serif}
+.container{max-width:480px;margin:35px auto;padding:20px}
+.card{background:#1c2138;padding:24px;border-radius:18px;margin-bottom:18px}
+h1,h2{text-align:center}
+h1{color:#9d8cff}
+input,select,textarea{width:100%;padding:14px;margin:8px 0;border:1px solid #414967;border-radius:10px;background:#101629;color:white;font-size:15px}
+button{width:100%;padding:14px;border:0;border-radius:10px;background:#7662ff;color:white;font-weight:bold;font-size:16px;margin-top:10px;cursor:pointer}
+button.secondary{background:#303954}
+button.danger{background:#d94b60}
+.link{text-align:center;color:#b9adff;cursor:pointer;margin-top:18px}
+.small{text-align:center;color:#aab0c8;font-size:14px}
+.message{text-align:center;margin:12px 0;color:#ffd27a}
+.room{background:#252c47;padding:16px;border-radius:12px;margin:12px 0}
+.room h3{margin:0 0 8px}
+.hidden{display:none}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.top button{width:auto;padding:10px 15px;margin:0}
 </style>
 </head>
 <body>
+<div class="container">
 
-<section id="authScreen">
- <div class="auth-card">
-  <div class="logo">🎙️ PWA LIVE CHAT</div>
-  <h2>Welcome!</h2>
-  <p class="sub">Login or create your account to continue</p>
-
-  <label>Email Address</label>
-  <input id="email" type="email" placeholder="Enter your email">
-
-  <label>Password</label>
-  <input id="password" type="password" placeholder="Enter password">
-
-  <div class="auth-buttons">
-   <button onclick="login()">Login</button>
-   <button class="secondary" onclick="signup()">Create Account</button>
-  </div>
-  <p id="message"></p>
- </div>
+<!-- LOGIN PAGE -->
+<section id="loginPage" class="card">
+<h1>🎙️ PWA LIVE CHAT</h1>
+<p class="small">Welcome! Login to continue</p>
+<h2>Login</h2>
+<input id="loginEmail" type="email" placeholder="Email Address">
+<input id="loginPassword" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+<p class="link" onclick="showSignup()">Don't have an account? Create Account</p>
+<div id="loginMessage" class="message"></div>
 </section>
 
-<section id="appScreen">
- <header>
-  <strong>🎙️ PWA LIVE CHAT</strong>
-  <button class="secondary" onclick="logout()">Logout</button>
- </header>
-
- <main class="container">
-  <h2>👋 Welcome</h2>
-  <p id="userEmail" style="color:#aaa"></p>
-
-  <div class="panel">
-   <h3>➕ Create Your Room</h3>
-
-   <label>Room Name</label>
-   <input id="roomName" maxlength="40" placeholder="Enter room name">
-
-   <label>Description</label>
-   <textarea id="roomDescription" placeholder="Describe your room"></textarea>
-
-   <label>Category</label>
-   <select id="category">
-    <option>Friendship</option>
-    <option>Party</option>
-    <option>Music</option>
-    <option>Gaming</option>
-    <option>Chat</option>
-   </select>
-
-   <label>Room Type</label>
-   <select id="privacy">
-    <option value="false">Public</option>
-    <option value="true">Private</option>
-   </select>
-
-   <label>Seats</label>
-   <select id="seats">
-    <option value="4">4 Seats</option>
-    <option value="8" selected>8 Seats</option>
-    <option value="12">12 Seats</option>
-   </select>
-
-   <button style="width:100%" onclick="createRoom()">Create Room</button>
-   <p id="appMessage"></p>
-  </div>
-
-  <div class="panel">
-   <h3>🌍 Public Rooms</h3>
-   <div id="roomsList">Loading...</div>
-  </div>
-
-  <div class="panel">
-   <h3>🏠 My Room</h3>
-   <div id="myRoom">Loading...</div>
-  </div>
- </main>
+<!-- SIGNUP PAGE -->
+<section id="signupPage" class="card hidden">
+<h1>🎙️ PWA LIVE CHAT</h1>
+<h2>Create Account</h2>
+<input id="signupUsername" type="text" placeholder="Username">
+<input id="signupEmail" type="email" placeholder="Email Address">
+<input id="signupPassword" type="password" placeholder="Password (minimum 6 characters)">
+<input id="confirmPassword" type="password" placeholder="Confirm Password">
+<button onclick="signup()">Create Account</button>
+<p class="link" onclick="showLogin()">Already have an account? Login</p>
+<div id="signupMessage" class="message"></div>
 </section>
+
+<!-- HOME / ROOMS PAGE -->
+<section id="homePage" class="hidden">
+<div class="top">
+<h2>🎙️ Live Rooms</h2>
+<button class="secondary" onclick="logout()">Logout</button>
+</div>
+<p id="welcomeText" class="small"></p>
+
+<div class="card">
+<h2>Create Room</h2>
+<input id="roomName" maxlength="40" placeholder="Room Name (3-40 characters)">
+<textarea id="roomDescription" placeholder="Room Description"></textarea>
+<select id="roomCategory">
+<option>Friendship</option>
+<option>Party</option>
+<option>Music</option>
+<option>Gaming</option>
+<option>Chat</option>
+</select>
+<select id="roomSeats">
+<option value="4">4 Seats</option>
+<option value="8" selected>8 Seats</option>
+<option value="12">12 Seats</option>
+</select>
+<button onclick="createRoom()">Create Room</button>
+<div id="roomMessage" class="message"></div>
+</div>
+
+<div class="card">
+<h2>Public Rooms</h2>
+<button class="secondary" onclick="loadRooms()">Refresh Rooms</button>
+<div id="roomsList"></div>
+</div>
+</section>
+
+</div>
 
 <script>
 const SUPABASE_URL = "https://rbfcnagpftqubxhqqzsy.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_C0hWEe4qXcoUz26IwWM2PA_w4TKNBda";
+const SUPABASE_KEY = "sb_publishable_C0hWEe4qXcoUz26IwWM2PA_w4TKNBda";
 
-const db = window.supabase.createClient(
- SUPABASE_URL,
- SUPABASE_PUBLISHABLE_KEY
+const supabase = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
 );
 
 let currentUser = null;
-let authReady = false;
 
-function msg(t){
- document.getElementById("message").textContent=t;
+function showPage(page) {
+  document.getElementById("loginPage").classList.add("hidden");
+  document.getElementById("signupPage").classList.add("hidden");
+  document.getElementById("homePage").classList.add("hidden");
+  document.getElementById(page).classList.remove("hidden");
 }
 
-function appMsg(t){
- document.getElementById("appMessage").textContent=t;
+function showLogin() {
+  showPage("loginPage");
+  document.getElementById("signupMessage").textContent = "";
 }
 
-function showLogin(){
- currentUser=null;
- document.getElementById("appScreen").style.display="none";
- document.getElementById("authScreen").style.display="flex";
+function showSignup() {
+  showPage("signupPage");
+  document.getElementById("loginMessage").textContent = "";
 }
 
-function showApp(user){
- if(!user) return;
- currentUser=user;
- document.getElementById("authScreen").style.display="none";
- document.getElementById("appScreen").style.display="block";
- document.getElementById("userEmail").textContent=user.email || "";
- loadRooms();
+function showHome(user) {
+  currentUser = user;
+  showPage("homePage");
+  const username = user.user_metadata?.username || user.email;
+  document.getElementById("welcomeText").textContent =
+    "Welcome, " + username + "!";
+  loadRooms();
 }
 
-async function signup(){
- const email=document.getElementById("email").value.trim();
- const password=document.getElementById("password").value;
- if(!email || password.length<6){
-  msg("Enter a valid email and password (minimum 6 characters).");
-  return;
- }
- msg("Creating account...");
- const {data,error}=await db.auth.signUp({email,password});
- if(error){msg(error.message);return;}
- if(data.session){showApp(data.session.user);}
- else{msg("Account created! Confirm your email, then login.");}
+async function signup() {
+  const username = document.getElementById("signupUsername").value.trim();
+  const email = document.getElementById("signupEmail").value.trim();
+  const password = document.getElementById("signupPassword").value;
+  const confirm = document.getElementById("confirmPassword").value;
+  const msg = document.getElementById("signupMessage");
+
+  msg.textContent = "";
+
+  if (!username) {
+    msg.textContent = "Please enter username.";
+    return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    msg.textContent = "Enter a valid email address.";
+    return;
+  }
+  if (password.length < 6) {
+    msg.textContent = "Password minimum 6 characters undali.";
+    return;
+  }
+  if (password !== confirm) {
+    msg.textContent = "Passwords do not match.";
+    return;
+  }
+
+  msg.textContent = "Creating account...";
+
+  const { data, error } = await supabase.auth.signUp({
+    email: email,
+    password: password,
+    options: {
+      data: { username: username }
+    }
+  });
+
+  if (error) {
+    msg.textContent = error.message;
+    return;
+  }
+
+  if (data.session) {
+    showHome(data.user);
+  } else {
+    showLogin();
+    document.getElementById("loginMessage").textContent =
+      "Account created! Email confirmation required ayithe email verify chesi login avvandi.";
+  }
 }
 
-async function login(){
- const email=document.getElementById("email").value.trim();
- const password=document.getElementById("password").value;
- if(!email || !password){msg("Enter email and password.");return;}
- msg("Logging in...");
- const {data,error}=await db.auth.signInWithPassword({email,password});
- if(error){msg(error.message);return;}
- showApp(data.user);
+async function login() {
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value;
+  const msg = document.getElementById("loginMessage");
+
+  msg.textContent = "";
+
+  if (!email || !password) {
+    msg.textContent = "Enter email and password.";
+    return;
+  }
+
+  msg.textContent = "Logging in...";
+
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: email,
+    password: password
+  });
+
+  if (error) {
+    msg.textContent = "Login failed. Check email and password, or create an account.";
+    return;
+  }
+
+  showHome(data.user);
 }
 
-async function logout(){
- await db.auth.signOut();
- showLogin();
- msg("Logged out successfully.");
+async function logout() {
+  await supabase.auth.signOut();
+  currentUser = null;
+  showLogin();
 }
 
-function esc(v){
- return String(v??"").replace(/[&<>"']/g,c=>({
- "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
- })[c]);
+async function createRoom() {
+  const msg = document.getElementById("roomMessage");
+  const name = document.getElementById("roomName").value.trim();
+  const description = document.getElementById("roomDescription").value.trim();
+  const category = document.getElementById("roomCategory").value;
+  const seat_count = Number(document.getElementById("roomSeats").value);
+
+  msg.textContent = "";
+
+  if (!currentUser) {
+    msg.textContent = "Please login first.";
+    return;
+  }
+  if (name.length < 3 || name.length > 40) {
+    msg.textContent = "Room name 3 to 40 characters undali.";
+    return;
+  }
+
+  msg.textContent = "Creating room...";
+
+  const { error } = await supabase
+    .from("rooms")
+    .insert({
+      owner_id: currentUser.id,
+      name,
+      description,
+      category,
+      seat_count,
+      is_private: false
+    });
+
+  if (error) {
+    if (error.code === "23505") {
+      msg.textContent = "You already have a room. Delete your old room first.";
+    } else {
+      msg.textContent = error.message;
+    }
+    return;
+  }
+
+  msg.textContent = "Room created successfully!";
+  document.getElementById("roomName").value = "";
+  document.getElementById("roomDescription").value = "";
+  loadRooms();
 }
 
-async function loadRooms(){
- if(!currentUser)return;
+async function loadRooms() {
+  const list = document.getElementById("roomsList");
+  list.textContent = "Loading rooms...";
 
- const {data,error}=await db.from("rooms").select("*")
-  .eq("is_private",false).order("created_at",{ascending:false});
+  const { data, error } = await supabase
+    .from("rooms")
+    .select("id, owner_id, name, description, category, seat_count, created_at")
+    .eq("is_private", false)
+    .order("created_at", { ascending: false });
 
- if(error){
-  document.getElementById("roomsList").textContent=error.message;
- }else if(!data.length){
-  document.getElementById("roomsList").textContent="No public rooms yet.";
- }else{
-  document.getElementById("roomsList").innerHTML=data.map(r=>`
-   <div class="room">
-    <h3>${esc(r.name)}</h3>
-    <p>${esc(r.description)}</p>
-    <small>${esc(r.category)} · ${r.seat_count} Seats</small>
-    <p><button onclick="enterRoom('${r.id}')">Enter Room</button></p>
-   </div>`).join("");
- }
+  if (error) {
+    list.textContent = error.message;
+    return;
+  }
 
- const {data:mine,error:myError}=await db.from("rooms")
-  .select("*").eq("owner_id",currentUser.id).maybeSingle();
+  list.innerHTML = "";
 
- if(myError){
-  document.getElementById("myRoom").textContent=myError.message;
- }else if(!mine){
-  document.getElementById("myRoom").textContent="You haven't created a room yet.";
- }else{
-  document.getElementById("myRoom").innerHTML=`
-   <div class="room">
-    <h3>${esc(mine.name)}</h3>
-    <p>${esc(mine.description)}</p>
-    <small>${esc(mine.category)} · ${mine.seat_count} Seats</small>
-    <p><button class="danger" onclick="deleteRoom('${mine.id}')">Delete My Room</button></p>
-   </div>`;
- }
+  if (!data || data.length === 0) {
+    list.textContent = "No public rooms yet. Create the first room!";
+    return;
+  }
+
+  data.forEach(room => {
+    const div = document.createElement("div");
+    div.className = "room";
+
+    const heading = document.createElement("h3");
+    heading.textContent = "🎙️ " + room.name;
+
+    const desc = document.createElement("p");
+    desc.textContent = room.description || "No description";
+
+    const details = document.createElement("p");
+    details.className = "small";
+    details.textContent =
+      room.category + " • " + room.seat_count + " seats";
+
+    div.append(heading, desc, details);
+
+    if (currentUser && room.owner_id === currentUser.id) {
+      const del = document.createElement("button");
+      del.className = "danger";
+      del.textContent = "Delete My Room";
+      del.onclick = () => deleteRoom(room.id);
+      div.appendChild(del);
+    }
+
+    list.appendChild(div);
+  });
 }
 
-async function createRoom(){
- if(!currentUser)return;
- const name=document.getElementById("roomName").value.trim();
- if(name.length<3){appMsg("Room name must be at least 3 characters.");return;}
+async function deleteRoom(roomId) {
+  if (!confirm("Are you sure you want to delete your room?")) return;
 
- appMsg("Creating room...");
- const {error}=await db.from("rooms").insert({
-  owner_id:currentUser.id,
-  name,
-  description:document.getElementById("roomDescription").value.trim(),
-  category:document.getElementById("category").value,
-  is_private:document.getElementById("privacy").value==="true",
-  seat_count:Number(document.getElementById("seats").value)
- });
+  const { error } = await supabase
+    .from("rooms")
+    .delete()
+    .eq("id", roomId)
+    .eq("owner_id", currentUser.id);
 
- if(error){
-  appMsg(error.code==="23505"?
-   "You already have a room. Delete it before creating another.":
-   error.message);
-  return;
- }
- appMsg("Room created successfully!");
- document.getElementById("roomName").value="";
- document.getElementById("roomDescription").value="";
- loadRooms();
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  alert("Room deleted.");
+  loadRooms();
 }
 
-async function deleteRoom(id){
- if(!confirm("Delete your room?"))return;
- const {error}=await db.from("rooms").delete()
-  .eq("id",id).eq("owner_id",currentUser.id);
- if(error){appMsg(error.message);return;}
- appMsg("Room deleted.");
- loadRooms();
+async function checkSession() {
+  const { data, error } = await supabase.auth.getSession();
+
+  if (error) {
+    showLogin();
+    return;
+  }
+
+  if (data.session) {
+    showHome(data.session.user);
+  } else {
+    showLogin();
+  }
 }
 
-function enterRoom(id){
- alert("Room screen is coming next. Live voice is not connected yet.");
-}
-
-async function initialize(){
- const {data,error}=await db.auth.getSession();
- if(error){showLogin();msg(error.message);return;}
- if(data.session?.user)showApp(data.session.user);
- else showLogin();
- authReady=true;
-}
-
-db.auth.onAuthStateChange((event,session)=>{
- if(!authReady)return;
- if(session?.user)showApp(session.user);
- else showLogin();
+supabase.auth.onAuthStateChange((event, session) => {
+  if (session && !currentUser) {
+    showHome(session.user);
+  } else if (!session && currentUser) {
+    currentUser = null;
+    showLogin();
+  }
 });
 
-initialize();
+checkSession();
 </script>
 </body>
 </html>
